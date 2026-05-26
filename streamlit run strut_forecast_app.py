@@ -889,6 +889,17 @@ if run_forecast:
     with st.expander("View Ending State After Forecast"):
         st.dataframe(ending_state_df, use_container_width=True)
 
+    st.subheader("Monthly Invoice Charts")
+
+    fig_monthly_cost = px.bar(
+        monthly_invoice_df,
+        x="Scenario",
+        y="Estimated Monthly Cost",
+        title="Estimated Monthly Cost by Scenario",
+        text_auto=True,
+    )
+    st.plotly_chart(fig_monthly_cost, use_container_width=True)
+
     st.subheader("Cost Analysis Charts")
 
     fig_cost_year = px.bar(
