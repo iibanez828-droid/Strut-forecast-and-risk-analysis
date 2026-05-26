@@ -900,6 +900,13 @@ if run_forecast:
         title="Total Forecast Cost by Year and Scenario",
         text_auto=True,
     )
+    fig_cost_year.update_layout(
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        )
+    )
     st.plotly_chart(fig_cost_year, use_container_width=True)
 
     fig_cost_components = px.bar(
@@ -911,6 +918,11 @@ if run_forecast:
         title="Cost Components by Year",
         text_auto=True,
     )
+    fig_cost_components.update_xaxes(
+        tickmode="linear",
+        dtick=1,
+        tickformat="d",
+    )
     st.plotly_chart(fig_cost_components, use_container_width=True)
 
     fig_hourly_rate_year = px.line(
@@ -920,10 +932,16 @@ if run_forecast:
         color="Scenario",
         markers=True,
         title="Hourly Rate by Year and Scenario",
+        line_shape="spline",
     )
     fig_hourly_rate_year.update_layout(
         yaxis_title="Hourly Rate",
         xaxis_title="Year",
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        ),
     )
     st.plotly_chart(fig_hourly_rate_year, use_container_width=True)
 
@@ -934,10 +952,16 @@ if run_forecast:
         color="Scenario",
         markers=True,
         title="Accumulated Budget by Scenario and Year",
+        line_shape="spline",
     )
     fig_accumulated_budget.update_layout(
         yaxis_title="Accumulated Total Cost",
         xaxis_title="Year",
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        ),
     )
     st.plotly_chart(fig_accumulated_budget, use_container_width=True)
 
@@ -953,43 +977,33 @@ if run_forecast:
     fig_annuity_cost.update_layout(
         yaxis_title="Annuity Cost per Year",
         xaxis_title="Year",
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        ),
     )
     st.plotly_chart(fig_annuity_cost, use_container_width=True)
 
-    fig_rate_annuity = go.Figure()
-    for scenario_name in cost_detail_df["Scenario"].unique():
-        scenario_df = cost_detail_df[cost_detail_df["Scenario"] == scenario_name]
-        fig_rate_annuity.add_trace(
-            go.Scatter(
-                x=scenario_df["Year"],
-                y=scenario_df["Yearly Hourly Rate"],
-                mode="lines+markers",
-                name=f"{scenario_name} - Hourly Rate",
-                yaxis="y1",
-            )
-        )
-        fig_rate_annuity.add_trace(
-            go.Scatter(
-                x=scenario_df["Year"],
-                y=scenario_df["Yearly Annuity Factor"],
-                mode="lines+markers",
-                name=f"{scenario_name} - Annuity Factor",
-                yaxis="y2",
-            )
-        )
-
-    fig_rate_annuity.update_layout(
-        title="Hourly Rate and Annuity Factor by Year and Scenario",
-        xaxis=dict(title="Year"),
-        yaxis=dict(title="Hourly Rate"),
-        yaxis2=dict(
-            title="Annuity Factor",
-            overlaying="y",
-            side="right",
-        ),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.35, xanchor="center", x=0.5),
+    fig_hourly_rate_comparison = px.line(
+        cost_detail_df,
+        x="Year",
+        y="Yearly Hourly Rate",
+        color="Scenario",
+        markers=True,
+        title="Hourly Rate by Year and Scenario Comparison",
+        line_shape="spline",
     )
-    st.plotly_chart(fig_rate_annuity, use_container_width=True)
+    fig_hourly_rate_comparison.update_layout(
+        yaxis_title="Hourly Rate",
+        xaxis_title="Year",
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        ),
+    )
+    st.plotly_chart(fig_hourly_rate_comparison, use_container_width=True)
 
     st.subheader("Forecast Charts")
 
@@ -1003,6 +1017,13 @@ if run_forecast:
             barmode="group",
             text_auto=True,
         )
+        fig_operating.update_layout(
+            xaxis=dict(
+                tickmode="linear",
+                dtick=1,
+                tickformat="d",
+            )
+        )
         st.plotly_chart(fig_operating, use_container_width=True)
 
     with chart_col2:
@@ -1014,6 +1035,13 @@ if run_forecast:
             barmode="group",
             text_auto=True,
         )
+        fig_new.update_layout(
+            xaxis=dict(
+                tickmode="linear",
+                dtick=1,
+                tickformat="d",
+            )
+        )
         st.plotly_chart(fig_new, use_container_width=True)
 
     fig_total = px.bar(
@@ -1022,6 +1050,13 @@ if run_forecast:
         y="Total Replacement Events",
         title="Total Replacement Events by Year",
         text_auto=True,
+    )
+    fig_total.update_layout(
+        xaxis=dict(
+            tickmode="linear",
+            dtick=1,
+            tickformat="d",
+        )
     )
     st.plotly_chart(fig_total, use_container_width=True)
 
@@ -1071,6 +1106,13 @@ if run_forecast:
             color="Event Reason",
             title="Replacement Events by Reason",
             text_auto=True,
+        )
+        fig_reason.update_layout(
+            xaxis=dict(
+                tickmode="linear",
+                dtick=1,
+                tickformat="d",
+            )
         )
         st.plotly_chart(fig_reason, use_container_width=True)
 else:
