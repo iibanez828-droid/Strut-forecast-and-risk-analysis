@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from io import StringIO
 
 
@@ -495,6 +496,7 @@ def build_cost_analysis(
             year = int(row["Year"])
             year_index = year - start_year + 1
             discount_factor = 1 / ((1 + discount_rate) ** year_index) if discount_rate > 0 else 1.0
+            yearly_annuity_factor = calculate_annuity_factor(discount_rate, year_index)
 
             ppi_adjustment = ppi_adjustments.get(year, 0.0)
             ppi_multiplier = 1 + ppi_adjustment
@@ -512,7 +514,9 @@ def build_cost_analysis(
             repair_cost_total = operating_change_out_qty * adjusted_repair_unit_cost
             total_year_cost = std_new_cost_total + hd_new_cost_total + repair_cost_total
             present_value_cost = total_year_cost * discount_factor
+            annuity_cost_per_year = present_value_cost * yearly_annuity_factor
             yearly_hourly_rate = total_year_cost / annual_fleet_hours if annual_fleet_hours > 0 else 0
+            annuity_hourly_rate = annuity_cost_per_year / annual_fleet_hours if annual_fleet_hours > 0 else 0
 
             cost_records.append(
                 {
@@ -535,12 +539,18 @@ def build_cost_analysis(
                     "Total Year Cost": total_year_cost,
                     "Discount Factor": discount_factor,
                     "Present Value Cost": present_value_cost,
+                    "Yearly Annuity Factor": yearly_annuity_factor,
+                    "Annuity Cost per Year": annuity_cost_per_year,
                     "Annual Fleet Hours": annual_fleet_hours,
                     "Yearly Hourly Rate": yearly_hourly_rate,
+                    "Annuity Hourly Rate": annuity_hourly_rate,
                 }
             )
 
     cost_detail_df = pd.DataFrame(cost_records)
+    cost_detail_df = cost_detail_df.sort_values(["Scenario", "Year"]).reset_index(drop=True)
+    cost_detail_df["Accumulated Budget"] = cost_detail_df.groupby("Scenario")["Total Year Cost"].cumsum()
+    cost_detail_df["Accumulated Present Value Cost"] = cost_detail_df.groupby("Scenario")["Present Value Cost"].cumsum()
 
     scenario_summary = (
         cost_detail_df
@@ -549,6 +559,7 @@ def build_cost_analysis(
             **{
                 "Total Nominal Cost": ("Total Year Cost", "sum"),
                 "Present Value Cost": ("Present Value Cost", "sum"),
+                "Total Annuity Cost by Year": ("Annuity Cost per Year", "sum"),
                 "Total Repair Cost": ("Repair Cost", "sum"),
                 "Total New Std Strut Cost": ("Std New Strut Cost", "sum"),
                 "Total New HD Strut Cost": ("HD New Strut Cost", "sum"),
@@ -902,14 +913,83 @@ if run_forecast:
     )
     st.plotly_chart(fig_cost_components, use_container_width=True)
 
-    fig_hourly_rate = px.bar(
-        scenario_cost_summary,
-        x="Scenario",
-        y="Scenario Hourly Rate",
-        title="Scenario Hourly Rate Based on Equivalent Annual Cost",
+    fig_hourly_rate_year = px.line(
+        cost_detail_df,
+        x="Year",
+        y="Yearly Hourly Rate",
+        color="Scenario",
+        markers=True,
+        title="Hourly Rate by Year and Scenario",
+    )
+    fig_hourly_rate_year.update_layout(
+        yaxis_title="Hourly Rate",
+        xaxis_title="Year",
+    )
+    st.plotly_chart(fig_hourly_rate_year, use_container_width=True)
+
+    fig_accumulated_budget = px.line(
+        cost_detail_df,
+        x="Year",
+        y="Accumulated Budget",
+        color="Scenario",
+        markers=True,
+        title="Accumulated Budget by Scenario and Year",
+    )
+    fig_accumulated_budget.update_layout(
+        yaxis_title="Accumulated Total Cost",
+        xaxis_title="Year",
+    )
+    st.plotly_chart(fig_accumulated_budget, use_container_width=True)
+
+    fig_annuity_cost = px.bar(
+        cost_detail_df,
+        x="Year",
+        y="Annuity Cost per Year",
+        color="Scenario",
+        barmode="group",
+        title="Annuity Cost per Year by Scenario",
         text_auto=True,
     )
-    st.plotly_chart(fig_hourly_rate, use_container_width=True)
+    fig_annuity_cost.update_layout(
+        yaxis_title="Annuity Cost per Year",
+        xaxis_title="Year",
+    )
+    st.plotly_chart(fig_annuity_cost, use_container_width=True)
+
+    fig_rate_annuity = go.Figure()
+    for scenario_name in cost_detail_df["Scenario"].unique():
+        scenario_df = cost_detail_df[cost_detail_df["Scenario"] == scenario_name]
+        fig_rate_annuity.add_trace(
+            go.Scatter(
+                x=scenario_df["Year"],
+                y=scenario_df["Yearly Hourly Rate"],
+                mode="lines+markers",
+                name=f"{scenario_name} - Hourly Rate",
+                yaxis="y1",
+            )
+        )
+        fig_rate_annuity.add_trace(
+            go.Scatter(
+                x=scenario_df["Year"],
+                y=scenario_df["Yearly Annuity Factor"],
+                mode="lines+markers",
+                name=f"{scenario_name} - Annuity Factor",
+                yaxis="y2",
+            )
+        )
+
+    fig_rate_annuity.update_layout(
+        title="Hourly Rate and Annuity Factor by Year and Scenario",
+        xaxis=dict(title="Year"),
+        yaxis=dict(title="Hourly Rate"),
+        yaxis2=dict(
+            title="Annuity Factor",
+            overlaying="y",
+            side="right",
+        ),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.35, xanchor="center", x=0.5),
+    )
+    st.plotly_chart(fig_rate_annuity, use_container_width=True)
 
     st.subheader("Forecast Charts")
 
