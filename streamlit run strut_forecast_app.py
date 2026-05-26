@@ -443,7 +443,132 @@ def simulate_strut_forecast(
 
 
 # ============================================================
-# 4. STREAMLIT APP
+# 4. COST ANALYSIS ENGINE
+# ============================================================
+
+def calculate_annuity_factor(discount_rate: float, periods: int) -> float:
+    if periods <= 0:
+        return 0.0
+    if discount_rate == 0:
+        return 1 / periods
+    return (discount_rate * (1 + discount_rate) ** periods) / (((1 + discount_rate) ** periods) - 1)
+
+
+def build_cost_analysis(
+    yearly_summary: pd.DataFrame,
+    selected_truck_count: int,
+    annual_operating_hours: float,
+    start_year: int,
+    end_year: int,
+    discount_rate: float,
+    ppi_adjustments: dict,
+    current_std_new_cost: float,
+    current_hd_new_cost: float,
+    current_repair_cost: float,
+    oem_std_new_cost: float,
+    oem_hd_new_cost: float,
+    oem_repair_cost: float,
+):
+    horizon_years = end_year - start_year + 1
+    annuity_factor = calculate_annuity_factor(discount_rate, horizon_years)
+    annual_fleet_hours = selected_truck_count * annual_operating_hours
+
+    scenario_inputs = [
+        {
+            "Scenario": "Current Cost Strategy",
+            "Std New Strut Unit Cost": current_std_new_cost,
+            "HD New Strut Unit Cost": current_hd_new_cost,
+            "Repair Unit Cost": current_repair_cost,
+        },
+        {
+            "Scenario": "OEM Reman Strategy",
+            "Std New Strut Unit Cost": oem_std_new_cost,
+            "HD New Strut Unit Cost": oem_hd_new_cost,
+            "Repair Unit Cost": oem_repair_cost,
+        },
+    ]
+
+    cost_records = []
+
+    for scenario in scenario_inputs:
+        for _, row in yearly_summary.iterrows():
+            year = int(row["Year"])
+            year_index = year - start_year + 1
+            discount_factor = 1 / ((1 + discount_rate) ** year_index) if discount_rate > 0 else 1.0
+
+            ppi_adjustment = ppi_adjustments.get(year, 0.0)
+            ppi_multiplier = 1 + ppi_adjustment
+
+            std_new_qty = int(row["New Std Struts Required"])
+            hd_new_qty = int(row["New HD Struts Required"])
+            operating_change_out_qty = int(row["Total Operating Change-Outs"])
+
+            adjusted_std_new_unit_cost = scenario["Std New Strut Unit Cost"] * ppi_multiplier
+            adjusted_hd_new_unit_cost = scenario["HD New Strut Unit Cost"] * ppi_multiplier
+            adjusted_repair_unit_cost = scenario["Repair Unit Cost"] * ppi_multiplier
+
+            std_new_cost_total = std_new_qty * adjusted_std_new_unit_cost
+            hd_new_cost_total = hd_new_qty * adjusted_hd_new_unit_cost
+            repair_cost_total = operating_change_out_qty * adjusted_repair_unit_cost
+            total_year_cost = std_new_cost_total + hd_new_cost_total + repair_cost_total
+            present_value_cost = total_year_cost * discount_factor
+            yearly_hourly_rate = total_year_cost / annual_fleet_hours if annual_fleet_hours > 0 else 0
+
+            cost_records.append(
+                {
+                    "Scenario": scenario["Scenario"],
+                    "Year": year,
+                    "Std New Struts Required": std_new_qty,
+                    "HD New Struts Required": hd_new_qty,
+                    "Operating Change-Outs": operating_change_out_qty,
+                    "PPI Adjustment %": ppi_adjustment * 100,
+                    "PPI Multiplier": ppi_multiplier,
+                    "Base Std New Strut Unit Cost": scenario["Std New Strut Unit Cost"],
+                    "Base HD New Strut Unit Cost": scenario["HD New Strut Unit Cost"],
+                    "Base Repair Unit Cost": scenario["Repair Unit Cost"],
+                    "Adjusted Std New Strut Unit Cost": adjusted_std_new_unit_cost,
+                    "Adjusted HD New Strut Unit Cost": adjusted_hd_new_unit_cost,
+                    "Adjusted Repair Unit Cost": adjusted_repair_unit_cost,
+                    "Std New Strut Cost": std_new_cost_total,
+                    "HD New Strut Cost": hd_new_cost_total,
+                    "Repair Cost": repair_cost_total,
+                    "Total Year Cost": total_year_cost,
+                    "Discount Factor": discount_factor,
+                    "Present Value Cost": present_value_cost,
+                    "Annual Fleet Hours": annual_fleet_hours,
+                    "Yearly Hourly Rate": yearly_hourly_rate,
+                }
+            )
+
+    cost_detail_df = pd.DataFrame(cost_records)
+
+    scenario_summary = (
+        cost_detail_df
+        .groupby("Scenario", as_index=False)
+        .agg(
+            **{
+                "Total Nominal Cost": ("Total Year Cost", "sum"),
+                "Present Value Cost": ("Present Value Cost", "sum"),
+                "Total Repair Cost": ("Repair Cost", "sum"),
+                "Total New Std Strut Cost": ("Std New Strut Cost", "sum"),
+                "Total New HD Strut Cost": ("HD New Strut Cost", "sum"),
+                "Total Operating Change-Outs": ("Operating Change-Outs", "sum"),
+                "Total New Std Struts": ("Std New Struts Required", "sum"),
+                "Total New HD Struts": ("HD New Struts Required", "sum"),
+            }
+        )
+    )
+
+    scenario_summary["Annuity Factor"] = annuity_factor
+    scenario_summary["Equivalent Annual Cost"] = scenario_summary["Present Value Cost"] * annuity_factor
+    scenario_summary["Annual Fleet Hours"] = annual_fleet_hours
+    scenario_summary["Scenario Hourly Rate"] = scenario_summary["Equivalent Annual Cost"] / annual_fleet_hours if annual_fleet_hours > 0 else 0
+
+    return cost_detail_df, scenario_summary
+
+
+# ============================================================
+# 5. STREAMLIT APP
 # ============================================================
 
 st.set_page_config(page_title="Truck Strut Replacement Forecast", layout="wide")
@@ -460,21 +585,91 @@ std_interval = st.sidebar.number_input("Std Strut Operating Change-Out Interval"
 hd_interval = st.sidebar.number_input("HD Strut Operating Change-Out Interval", min_value=1, value=7500, step=100)
 max_life_hours = st.sidebar.number_input("Strut Maximum Total Life Hours", min_value=1, value=45000, step=1000)
 
+st.sidebar.header("Cost Analysis Assumptions")
+st.sidebar.caption("Enter unit costs for each strategy. New strut costs are applied only to end-of-life replacements. Repair costs are applied to operating change-outs.")
+
+st.sidebar.subheader("Current Cost Strategy")
+current_std_new_cost = st.sidebar.number_input(
+    "Current Strategy - Std New Strut Cost",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+current_hd_new_cost = st.sidebar.number_input(
+    "Current Strategy - HD New Strut Cost",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+current_repair_cost = st.sidebar.number_input(
+    "Current Strategy - Repair Cost per Operating Change-Out",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+
+st.sidebar.subheader("OEM Reman Strategy")
+oem_std_new_cost = st.sidebar.number_input(
+    "OEM Reman Strategy - Std New Strut Cost",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+oem_hd_new_cost = st.sidebar.number_input(
+    "OEM Reman Strategy - HD New Strut Cost",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+oem_repair_cost = st.sidebar.number_input(
+    "OEM Reman Strategy - Repair Cost per Operating Change-Out",
+    min_value=0.0,
+    value=0.0,
+    step=1000.0,
+)
+
+discount_rate = st.sidebar.number_input(
+    "Annual Discount Rate for Annuity Calculation (%)",
+    min_value=0.0,
+    max_value=100.0,
+    value=10.0,
+    step=0.5,
+) / 100
+
+st.sidebar.subheader("Yearly PPI Adjustment")
+st.sidebar.caption(
+    "Enter the price adjustment percentage for each forecast year. "
+    "The adjustment impacts only that specific year. Example: 5 means costs in that year increase by 5%."
+)
+
+ppi_adjustments = {}
+for ppi_year in range(int(start_year), int(end_year) + 1):
+    ppi_adjustments[ppi_year] = st.sidebar.number_input(
+        f"PPI Adjustment {ppi_year} (%)",
+        min_value=-100.0,
+        max_value=300.0,
+        value=0.0,
+        step=0.5,
+    ) / 100
+
 full_input_df = load_embedded_data()
 
-available_trucks = sorted(full_input_df["Truck ID"].unique(), key=lambda x: int(x) if str(x).isdigit() else str(x))
+available_trucks = sorted(
+    full_input_df["Truck ID"].unique(),
+    key=lambda x: int(x) if str(x).isdigit() else str(x),
+)
 
 st.sidebar.header("Truck Selection")
-select_all_trucks = st.sidebar.checkbox("Select all trucks", value=True)
+st.sidebar.caption(
+    "Select the trucks that must be included in the forecast and analysis. "
+    "Trucks not selected are excluded from all calculations."
+)
 
-if select_all_trucks:
-    selected_trucks = available_trucks
-else:
-    selected_trucks = st.sidebar.multiselect(
-        "Select trucks for forecast and analysis",
-        options=available_trucks,
-        default=available_trucks[:19],
-    )
+selected_trucks = st.sidebar.multiselect(
+    "Trucks included in forecast",
+    options=available_trucks,
+    default=available_trucks,
+)
 
 if not selected_trucks:
     st.error("Select at least one truck to run the analysis and forecast.")
@@ -636,6 +831,41 @@ if run_forecast:
     st.subheader("Yearly Summary")
     st.dataframe(yearly_summary, use_container_width=True)
 
+    cost_detail_df, scenario_cost_summary = build_cost_analysis(
+        yearly_summary=yearly_summary,
+        selected_truck_count=total_selected_trucks,
+        annual_operating_hours=float(annual_operating_hours),
+        start_year=int(start_year),
+        end_year=int(end_year),
+        discount_rate=float(discount_rate),
+        ppi_adjustments=ppi_adjustments,
+        current_std_new_cost=float(current_std_new_cost),
+        current_hd_new_cost=float(current_hd_new_cost),
+        current_repair_cost=float(current_repair_cost),
+        oem_std_new_cost=float(oem_std_new_cost),
+        oem_hd_new_cost=float(oem_hd_new_cost),
+        oem_repair_cost=float(oem_repair_cost),
+    )
+
+    st.subheader("Cost Analysis Summary")
+    st.caption("Costs use the specific PPI adjustment entered for each forecast year. Equivalent annual cost uses the present value of yearly forecast costs multiplied by the annuity factor. Scenario hourly rate = equivalent annual cost / selected fleet annual operating hours.")
+    st.dataframe(scenario_cost_summary, use_container_width=True)
+
+    cost_kpi_col1, cost_kpi_col2 = st.columns(2)
+    current_summary = scenario_cost_summary[scenario_cost_summary["Scenario"] == "Current Cost Strategy"].iloc[0]
+    oem_summary = scenario_cost_summary[scenario_cost_summary["Scenario"] == "OEM Reman Strategy"].iloc[0]
+
+    with cost_kpi_col1:
+        st.metric("Current Strategy Hourly Rate", f"{current_summary['Scenario Hourly Rate']:,.2f}")
+        st.metric("Current Strategy Equivalent Annual Cost", f"{current_summary['Equivalent Annual Cost']:,.2f}")
+
+    with cost_kpi_col2:
+        st.metric("OEM Reman Strategy Hourly Rate", f"{oem_summary['Scenario Hourly Rate']:,.2f}")
+        st.metric("OEM Reman Strategy Equivalent Annual Cost", f"{oem_summary['Equivalent Annual Cost']:,.2f}")
+
+    st.subheader("Cost Analysis by Year")
+    st.dataframe(cost_detail_df, use_container_width=True)
+
     st.subheader("Detailed Replacement Schedule")
     st.dataframe(schedule_df, use_container_width=True)
 
@@ -647,6 +877,39 @@ if run_forecast:
 
     with st.expander("View Ending State After Forecast"):
         st.dataframe(ending_state_df, use_container_width=True)
+
+    st.subheader("Cost Analysis Charts")
+
+    fig_cost_year = px.bar(
+        cost_detail_df,
+        x="Year",
+        y="Total Year Cost",
+        color="Scenario",
+        barmode="group",
+        title="Total Forecast Cost by Year and Scenario",
+        text_auto=True,
+    )
+    st.plotly_chart(fig_cost_year, use_container_width=True)
+
+    fig_cost_components = px.bar(
+        cost_detail_df,
+        x="Year",
+        y=["Std New Strut Cost", "HD New Strut Cost", "Repair Cost"],
+        color="Scenario",
+        facet_col="Scenario",
+        title="Cost Components by Year",
+        text_auto=True,
+    )
+    st.plotly_chart(fig_cost_components, use_container_width=True)
+
+    fig_hourly_rate = px.bar(
+        scenario_cost_summary,
+        x="Scenario",
+        y="Scenario Hourly Rate",
+        title="Scenario Hourly Rate Based on Equivalent Annual Cost",
+        text_auto=True,
+    )
+    st.plotly_chart(fig_hourly_rate, use_container_width=True)
 
     st.subheader("Forecast Charts")
 
