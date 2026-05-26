@@ -574,8 +574,38 @@ def build_cost_analysis(
     scenario_summary["Equivalent Annual Cost"] = scenario_summary["Present Value Cost"] * annuity_factor
     scenario_summary["Annual Fleet Hours"] = annual_fleet_hours
     scenario_summary["Scenario Hourly Rate"] = scenario_summary["Equivalent Annual Cost"] / annual_fleet_hours if annual_fleet_hours > 0 else 0
+    scenario_summary["Estimated Monthly Cost"] = scenario_summary["Equivalent Annual Cost"] / 12
 
-    return cost_detail_df, scenario_summary
+    monthly_invoice_df = scenario_summary[
+        [
+            "Scenario",
+            "Equivalent Annual Cost",
+            "Estimated Monthly Cost",
+            "Scenario Hourly Rate",
+        ]
+    ].copy()
+
+    current_monthly = monthly_invoice_df.loc[
+        monthly_invoice_df["Scenario"] == "Current Cost Strategy",
+        "Estimated Monthly Cost",
+    ].sum()
+    oem_monthly = monthly_invoice_df.loc[
+        monthly_invoice_df["Scenario"] == "OEM Reman Strategy",
+        "Estimated Monthly Cost",
+    ].sum()
+
+    monthly_invoice_comparison = pd.DataFrame(
+        [
+            {
+                "OEM Reman Estimated Monthly Invoice": oem_monthly,
+                "Current Strategy Estimated Monthly Cost": current_monthly,
+                "Monthly Difference OEM vs Current": oem_monthly - current_monthly,
+                "Monthly Difference %": ((oem_monthly - current_monthly) / current_monthly * 100) if current_monthly != 0 else 0,
+            }
+        ]
+    )
+
+    return cost_detail_df, scenario_summary, monthly_invoice_df, monthly_invoice_comparison
 
 
 # ============================================================
@@ -842,7 +872,7 @@ if run_forecast:
     st.subheader("Yearly Summary")
     st.dataframe(yearly_summary, use_container_width=True)
 
-    cost_detail_df, scenario_cost_summary = build_cost_analysis(
+    cost_detail_df, scenario_cost_summary, monthly_invoice_df, monthly_invoice_comparison = build_cost_analysis(
         yearly_summary=yearly_summary,
         selected_truck_count=total_selected_trucks,
         annual_operating_hours=float(annual_operating_hours),
@@ -873,6 +903,28 @@ if run_forecast:
     with cost_kpi_col2:
         st.metric("OEM Reman Strategy Hourly Rate", f"{oem_summary['Scenario Hourly Rate']:,.2f}")
         st.metric("OEM Reman Strategy Equivalent Annual Cost", f"{oem_summary['Equivalent Annual Cost']:,.2f}")
+
+    st.subheader("Estimated Monthly Invoice Comparison")
+    st.caption("The OEM Reman monthly invoice is estimated from the OEM Reman equivalent annual cost divided by 12. The Current Strategy monthly cost is calculated the same way for comparison.")
+    st.dataframe(monthly_invoice_comparison, use_container_width=True)
+
+    invoice_kpi_col1, invoice_kpi_col2, invoice_kpi_col3 = st.columns(3)
+    invoice_kpi_col1.metric(
+        "OEM Reman Estimated Monthly Invoice",
+        f"{monthly_invoice_comparison['OEM Reman Estimated Monthly Invoice'].iloc[0]:,.2f}",
+    )
+    invoice_kpi_col2.metric(
+        "Current Strategy Estimated Monthly Cost",
+        f"{monthly_invoice_comparison['Current Strategy Estimated Monthly Cost'].iloc[0]:,.2f}",
+    )
+    invoice_kpi_col3.metric(
+        "Monthly Difference OEM vs Current",
+        f"{monthly_invoice_comparison['Monthly Difference OEM vs Current'].iloc[0]:,.2f}",
+        delta=f"{monthly_invoice_comparison['Monthly Difference %'].iloc[0]:,.2f}%",
+    )
+
+    st.subheader("Monthly Cost by Scenario")
+    st.dataframe(monthly_invoice_df, use_container_width=True)
 
     st.subheader("Cost Analysis by Year")
     st.dataframe(cost_detail_df, use_container_width=True)
@@ -911,13 +963,7 @@ if run_forecast:
         title="Total Forecast Cost by Year and Scenario",
         text_auto=True,
     )
-    fig_cost_year.update_layout(
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        )
-    )
+    fig_cost_year.update_layout(xaxis=dict(tickmode="linear", dtick=1, tickformat="d"))
     st.plotly_chart(fig_cost_year, use_container_width=True)
 
     fig_cost_components = px.bar(
@@ -929,11 +975,7 @@ if run_forecast:
         title="Cost Components by Year",
         text_auto=True,
     )
-    fig_cost_components.update_xaxes(
-        tickmode="linear",
-        dtick=1,
-        tickformat="d",
-    )
+    fig_cost_components.update_xaxes(tickmode="linear", dtick=1, tickformat="d")
     st.plotly_chart(fig_cost_components, use_container_width=True)
 
     fig_hourly_rate_year = px.line(
@@ -948,11 +990,7 @@ if run_forecast:
     fig_hourly_rate_year.update_layout(
         yaxis_title="Hourly Rate",
         xaxis_title="Year",
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        ),
+        xaxis=dict(tickmode="linear", dtick=1, tickformat="d"),
     )
     st.plotly_chart(fig_hourly_rate_year, use_container_width=True)
 
@@ -968,11 +1006,7 @@ if run_forecast:
     fig_accumulated_budget.update_layout(
         yaxis_title="Accumulated Total Cost",
         xaxis_title="Year",
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        ),
+        xaxis=dict(tickmode="linear", dtick=1, tickformat="d"),
     )
     st.plotly_chart(fig_accumulated_budget, use_container_width=True)
 
@@ -988,11 +1022,7 @@ if run_forecast:
     fig_annuity_cost.update_layout(
         yaxis_title="Annuity Cost per Year",
         xaxis_title="Year",
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        ),
+        xaxis=dict(tickmode="linear", dtick=1, tickformat="d"),
     )
     st.plotly_chart(fig_annuity_cost, use_container_width=True)
 
@@ -1008,11 +1038,7 @@ if run_forecast:
     fig_hourly_rate_comparison.update_layout(
         yaxis_title="Hourly Rate",
         xaxis_title="Year",
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        ),
+        xaxis=dict(tickmode="linear", dtick=1, tickformat="d"),
     )
     st.plotly_chart(fig_hourly_rate_comparison, use_container_width=True)
 
@@ -1028,103 +1054,4 @@ if run_forecast:
             barmode="group",
             text_auto=True,
         )
-        fig_operating.update_layout(
-            xaxis=dict(
-                tickmode="linear",
-                dtick=1,
-                tickformat="d",
-            )
-        )
-        st.plotly_chart(fig_operating, use_container_width=True)
-
-    with chart_col2:
-        fig_new = px.bar(
-            yearly_summary,
-            x="Year",
-            y=["New Std Struts Required", "New HD Struts Required"],
-            title="New Struts Required by Year Due to End of Life",
-            barmode="group",
-            text_auto=True,
-        )
-        fig_new.update_layout(
-            xaxis=dict(
-                tickmode="linear",
-                dtick=1,
-                tickformat="d",
-            )
-        )
-        st.plotly_chart(fig_new, use_container_width=True)
-
-    fig_total = px.bar(
-        yearly_summary,
-        x="Year",
-        y="Total Replacement Events",
-        title="Total Replacement Events by Year",
-        text_auto=True,
-    )
-    fig_total.update_layout(
-        xaxis=dict(
-            tickmode="linear",
-            dtick=1,
-            tickformat="d",
-        )
-    )
-    st.plotly_chart(fig_total, use_container_width=True)
-
-    fig_truck = px.bar(
-        truck_summary,
-        x="Truck ID",
-        y="Total Replacement Events",
-        color="Strut Type",
-        title="Total Replacement Events by Truck",
-        text_auto=True,
-    )
-    fig_truck.update_layout(xaxis_type="category")
-    st.plotly_chart(fig_truck, use_container_width=True)
-
-    fig_truck_new = px.bar(
-        truck_summary,
-        x="Truck ID",
-        y="New Struts Required",
-        color="Strut Type",
-        title="New Struts Required by Truck Due to End of Life",
-        text_auto=True,
-    )
-    fig_truck_new.update_layout(xaxis_type="category")
-    st.plotly_chart(fig_truck_new, use_container_width=True)
-
-    fig_position = px.bar(
-        position_summary,
-        x="Strut Position",
-        y="Total Replacement Events",
-        color="Strut Type",
-        title="Total Replacement Events by Strut Position",
-        text_auto=True,
-    )
-    st.plotly_chart(fig_position, use_container_width=True)
-
-    if not schedule_df.empty:
-        reason_chart_df = (
-            schedule_df
-            .groupby(["Year", "Event Reason"], as_index=False)["Total Replacement Events"]
-            .sum()
-        )
-
-        fig_reason = px.bar(
-            reason_chart_df,
-            x="Year",
-            y="Total Replacement Events",
-            color="Event Reason",
-            title="Replacement Events by Reason",
-            text_auto=True,
-        )
-        fig_reason.update_layout(
-            xaxis=dict(
-                tickmode="linear",
-                dtick=1,
-                tickformat="d",
-            )
-        )
-        st.plotly_chart(fig_reason, use_container_width=True)
-else:
-    st.info("Click 'Run Forecast' to generate the replacement forecast.")
+        st.plotly_chart(fig_operating, use_containe
