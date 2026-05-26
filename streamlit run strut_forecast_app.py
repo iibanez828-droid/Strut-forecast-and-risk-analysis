@@ -172,7 +172,10 @@ def load_embedded_data() -> pd.DataFrame:
 
     numeric_columns = ["Strut Accumulated Life Hours", "Current Cycle Hours"]
     for col in numeric_columns:
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+        # Keep missing values as NaN. Do not convert missing data to zero,
+        # because missing accumulated life or cycle hours should be excluded
+        # from the forecast and cost analysis.
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df[
         [
@@ -219,9 +222,8 @@ def validate_input_data(df: pd.DataFrame) -> list:
 
     for col in ["Strut Accumulated Life Hours", "Current Cycle Hours"]:
         if col in df.columns:
-            if df[col].isna().any():
-                errors.append(f"Column '{col}' contains missing or non-numeric values.")
-            elif (df[col] < 0).any():
+            valid_numeric_values = df[col].dropna()
+            if (valid_numeric_values < 0).any():
                 errors.append(f"Column '{col}' contains negative values.")
 
     return errors
@@ -716,22 +718,45 @@ if not selected_trucks:
     st.error("Select at least one truck to run the analysis and forecast.")
     st.stop()
 
-input_df = full_input_df[full_input_df["Truck ID"].isin(selected_trucks)].copy()
+selected_input_df = full_input_df[full_input_df["Truck ID"].isin(selected_trucks)].copy()
+
+required_forecast_columns = ["Strut Accumulated Life Hours", "Current Cycle Hours"]
+missing_required_info_df = selected_input_df[
+    selected_input_df[required_forecast_columns].isna().any(axis=1)
+].copy()
+
+# Only rows with complete required hour data enter the forecast, charts, KPIs,
+# and cost analysis. Missing data is not assumed as zero.
+input_df = selected_input_df.dropna(subset=required_forecast_columns).copy()
 
 st.subheader("Selected Embedded Input Data")
-st.caption("Only the selected trucks are included in all tables, charts, KPIs, and forecast calculations.")
+st.caption("Only the selected trucks with complete required hour data are included in all tables, charts, KPIs, forecast calculations, and cost analysis.")
 st.dataframe(input_df, use_container_width=True)
 
-total_available_trucks = full_input_df["Truck ID"].nunique()
-total_selected_trucks = input_df["Truck ID"].nunique()
-total_trucks = total_selected_trucks
-total_struts = len(input_df)
+if not missing_required_info_df.empty:
+    st.warning(
+        "Some selected strut rows have missing required information and were excluded from the forecast and cost analysis. "
+        "Missing values are not assumed as zero."
+    )
+    st.dataframe(missing_required_info_df, use_container_width=True)
 
-col_a, col_b, col_c, col_d = st.columns(4)
+if input_df.empty:
+    st.error("No complete strut records are available for the selected trucks. Please select trucks with complete strut hour data.")
+    st.stop()
+
+total_available_trucks = full_input_df["Truck ID"].nunique()
+total_selected_trucks = selected_input_df["Truck ID"].nunique()
+total_included_trucks = input_df["Truck ID"].nunique()
+total_trucks = total_included_trucks
+total_struts = len(input_df)
+total_excluded_struts = len(missing_required_info_df)
+
+col_a, col_b, col_c, col_d, col_e = st.columns(5)
 col_a.metric("Available Trucks", total_available_trucks)
 col_b.metric("Selected Trucks", total_selected_trucks)
-col_c.metric("Selected Struts", total_struts)
-col_d.metric("Expected Struts for Selection", total_trucks * 4)
+col_c.metric("Included Trucks", total_included_trucks)
+col_d.metric("Included Struts", total_struts)
+col_e.metric("Excluded Struts", total_excluded_struts)
 
 errors = validate_input_data(input_df)
 if errors:
@@ -740,8 +765,8 @@ if errors:
         st.warning(error)
     st.stop()
 
-position_check = input_df.groupby("Truck ID")["Strut Position"].nunique().reset_index(name="Number of Positions")
-incomplete_trucks = position_check[position_check["Number of Positions"] < 4]
+position_check = input_df.groupby("Truck ID")["Strut Position"].nunique().reset_index(name="Number of Included Positions")
+incomplete_trucks = position_check[position_check["Number of Included Positions"] < 4]
 if not incomplete_trucks.empty:
     st.warning("Some trucks have fewer than 4 struts. The forecast will only simulate the listed struts.")
     st.dataframe(incomplete_trucks, use_container_width=True)
@@ -840,7 +865,7 @@ with st.expander("View strut age bucket summary"):
 run_forecast = st.button("Run Forecast", type="primary")
 
 if run_forecast:
-    st.info(f"Forecast running only for selected trucks: {', '.join(selected_trucks)}")
+    st.info(f"Forecast running only for selected trucks with complete required hour data: {', '.join(sorted(input_df['Truck ID'].unique(), key=lambda x: int(x) if str(x).isdigit() else str(x)))}")
 
     yearly_summary, schedule_df, truck_summary, position_summary, ending_state_df = simulate_strut_forecast(
         input_df=input_df,
@@ -874,7 +899,7 @@ if run_forecast:
 
     cost_detail_df, scenario_cost_summary, monthly_invoice_df, monthly_invoice_comparison = build_cost_analysis(
         yearly_summary=yearly_summary,
-        selected_truck_count=total_selected_trucks,
+        selected_truck_count=total_included_trucks,
         annual_operating_hours=float(annual_operating_hours),
         start_year=int(start_year),
         end_year=int(end_year),
@@ -1045,6 +1070,7 @@ if run_forecast:
     st.subheader("Forecast Charts")
 
     chart_col1, chart_col2 = st.columns(2)
+
     with chart_col1:
         fig_operating = px.bar(
             yearly_summary,
@@ -1054,4 +1080,88 @@ if run_forecast:
             barmode="group",
             text_auto=True,
         )
-        st.plotly_chart(fig_operating, use_containe
+        fig_operating.update_layout(
+            xaxis=dict(tickmode="linear", dtick=1, tickformat="d")
+        )
+        st.plotly_chart(fig_operating, use_container_width=True)
+
+    with chart_col2:
+        fig_new = px.bar(
+            yearly_summary,
+            x="Year",
+            y=["New Std Struts Required", "New HD Struts Required"],
+            title="New Struts Required by Year Due to End of Life",
+            barmode="group",
+            text_auto=True,
+        )
+        fig_new.update_layout(
+            xaxis=dict(tickmode="linear", dtick=1, tickformat="d")
+        )
+        st.plotly_chart(fig_new, use_container_width=True)
+
+    fig_total = px.bar(
+        yearly_summary,
+        x="Year",
+        y="Total Replacement Events",
+        title="Total Replacement Events by Year",
+        text_auto=True,
+    )
+    fig_total.update_layout(
+        xaxis=dict(tickmode="linear", dtick=1, tickformat="d")
+    )
+    st.plotly_chart(fig_total, use_container_width=True)
+
+    fig_truck = px.bar(
+        truck_summary,
+        x="Truck ID",
+        y="Total Replacement Events",
+        color="Strut Type",
+        title="Total Replacement Events by Truck",
+        text_auto=True,
+    )
+    fig_truck.update_layout(xaxis_type="category")
+    st.plotly_chart(fig_truck, use_container_width=True)
+
+    fig_truck_new = px.bar(
+        truck_summary,
+        x="Truck ID",
+        y="New Struts Required",
+        color="Strut Type",
+        title="New Struts Required by Truck Due to End of Life",
+        text_auto=True,
+    )
+    fig_truck_new.update_layout(xaxis_type="category")
+    st.plotly_chart(fig_truck_new, use_container_width=True)
+
+    fig_position = px.bar(
+        position_summary,
+        x="Strut Position",
+        y="Total Replacement Events",
+        color="Strut Type",
+        title="Total Replacement Events by Strut Position",
+        text_auto=True,
+    )
+    st.plotly_chart(fig_position, use_container_width=True)
+
+    if not schedule_df.empty:
+        reason_chart_df = (
+            schedule_df
+            .groupby(["Year", "Event Reason"], as_index=False)["Total Replacement Events"]
+            .sum()
+        )
+
+        fig_reason = px.bar(
+            reason_chart_df,
+            x="Year",
+            y="Total Replacement Events",
+            color="Event Reason",
+            title="Replacement Events by Reason",
+            text_auto=True,
+        )
+        fig_reason.update_layout(
+            xaxis=dict(tickmode="linear", dtick=1, tickformat="d")
+        )
+        st.plotly_chart(fig_reason, use_container_width=True)
+
+else:
+    st.info("Click 'Run Forecast' to generate the replacement forecast.")
