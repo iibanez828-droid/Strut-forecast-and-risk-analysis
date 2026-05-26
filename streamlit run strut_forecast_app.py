@@ -460,18 +460,42 @@ std_interval = st.sidebar.number_input("Std Strut Operating Change-Out Interval"
 hd_interval = st.sidebar.number_input("HD Strut Operating Change-Out Interval", min_value=1, value=7500, step=100)
 max_life_hours = st.sidebar.number_input("Strut Maximum Total Life Hours", min_value=1, value=45000, step=1000)
 
-input_df = load_embedded_data()
+full_input_df = load_embedded_data()
 
-st.subheader("Embedded Input Data")
+available_trucks = sorted(full_input_df["Truck ID"].unique(), key=lambda x: int(x) if str(x).isdigit() else str(x))
+
+st.sidebar.header("Truck Selection")
+select_all_trucks = st.sidebar.checkbox("Select all trucks", value=True)
+
+if select_all_trucks:
+    selected_trucks = available_trucks
+else:
+    selected_trucks = st.sidebar.multiselect(
+        "Select trucks for forecast and analysis",
+        options=available_trucks,
+        default=available_trucks[:19],
+    )
+
+if not selected_trucks:
+    st.error("Select at least one truck to run the analysis and forecast.")
+    st.stop()
+
+input_df = full_input_df[full_input_df["Truck ID"].isin(selected_trucks)].copy()
+
+st.subheader("Selected Embedded Input Data")
+st.caption("Only the selected trucks are included in all tables, charts, KPIs, and forecast calculations.")
 st.dataframe(input_df, use_container_width=True)
 
-total_trucks = input_df["Truck ID"].nunique()
+total_available_trucks = full_input_df["Truck ID"].nunique()
+total_selected_trucks = input_df["Truck ID"].nunique()
+total_trucks = total_selected_trucks
 total_struts = len(input_df)
 
-col_a, col_b, col_c = st.columns(3)
-col_a.metric("Trucks in Data", total_trucks)
-col_b.metric("Struts in Data", total_struts)
-col_c.metric("Expected Struts if 4 per Truck", total_trucks * 4)
+col_a, col_b, col_c, col_d = st.columns(4)
+col_a.metric("Available Trucks", total_available_trucks)
+col_b.metric("Selected Trucks", total_selected_trucks)
+col_c.metric("Selected Struts", total_struts)
+col_d.metric("Expected Struts for Selection", total_trucks * 4)
 
 errors = validate_input_data(input_df)
 if errors:
@@ -580,6 +604,8 @@ with st.expander("View strut age bucket summary"):
 run_forecast = st.button("Run Forecast", type="primary")
 
 if run_forecast:
+    st.info(f"Forecast running only for selected trucks: {', '.join(selected_trucks)}")
+
     yearly_summary, schedule_df, truck_summary, position_summary, ending_state_df = simulate_strut_forecast(
         input_df=input_df,
         start_year=int(start_year),
