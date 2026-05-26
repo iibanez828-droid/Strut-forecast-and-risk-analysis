@@ -10,132 +10,133 @@ import plotly.express as px
 # Truck ID
 # Strut Position
 # Strut Type
-# Truck Accumulated Hours
 # Current Strut Hours
 #
-# NOTE:
-# Your original data does not include a separate physical total life column.
-# Therefore:
+# IMPORTANT:
+# The uploaded file does not contain truck accumulated hours.
+# The numeric hour values are strut accumulated hours only.
+#
 # Current Strut Total Life Hours = Current Strut Hours
+# because the file does not include a separate physical lifetime counter.
 
 EMBEDDED_STRUT_DATA = [
-    {"Truck ID": "823", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1194.7, "Current Strut Total Life Hours": 1194.7},
-    {"Truck ID": "823", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1194.7, "Current Strut Total Life Hours": 1194.7},
-    {"Truck ID": "823", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 20823.53, "Current Strut Hours": 1954.2, "Current Strut Total Life Hours": 1954.2},
-    {"Truck ID": "824", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 76178.88, "Current Strut Hours": 3401.24, "Current Strut Total Life Hours": 3401.24},
-    {"Truck ID": "824", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 27505.09, "Current Strut Hours": 2414.7, "Current Strut Total Life Hours": 2414.7},
-    {"Truck ID": "824", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 19801.05, "Current Strut Hours": 2396.9, "Current Strut Total Life Hours": 2396.9},
-    {"Truck ID": "825", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 79424.13, "Current Strut Hours": 2608.9, "Current Strut Total Life Hours": 2608.9},
-    {"Truck ID": "825", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 44419.69, "Current Strut Hours": 2608.9, "Current Strut Total Life Hours": 2608.9},
-    {"Truck ID": "825", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 12639.56, "Current Strut Hours": 9972.06, "Current Strut Total Life Hours": 9972.06},
-    {"Truck ID": "825", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1178.1, "Current Strut Total Life Hours": 1178.1},
-    {"Truck ID": "826", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 39009.64, "Current Strut Hours": 7558.66, "Current Strut Total Life Hours": 7558.66},
-    {"Truck ID": "826", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 21534.76, "Current Strut Hours": 2582.8, "Current Strut Total Life Hours": 2582.8},
-    {"Truck ID": "826", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 6452.53, "Current Strut Hours": 347.5, "Current Strut Total Life Hours": 347.5},
-    {"Truck ID": "826", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1185, "Current Strut Total Life Hours": 1185},
-    {"Truck ID": "827", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 80898.4, "Current Strut Hours": 1889.6, "Current Strut Total Life Hours": 1889.6},
-    {"Truck ID": "827", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 353, "Current Strut Total Life Hours": 353},
-    {"Truck ID": "827", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 353, "Current Strut Total Life Hours": 353},
-    {"Truck ID": "827", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 847.7, "Current Strut Total Life Hours": 847.7},
-    {"Truck ID": "828", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 80544.67, "Current Strut Hours": 5198.84, "Current Strut Total Life Hours": 5198.84},
-    {"Truck ID": "828", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 46058.11, "Current Strut Hours": 7298.94, "Current Strut Total Life Hours": 7298.94},
-    {"Truck ID": "828", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 15304.32, "Current Strut Total Life Hours": 15304.32},
-    {"Truck ID": "828", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 15304.32, "Current Strut Total Life Hours": 15304.32},
-    {"Truck ID": "829", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 38962.98, "Current Strut Hours": 9376.77, "Current Strut Total Life Hours": 9376.77},
-    {"Truck ID": "829", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 16291.17, "Current Strut Hours": 901.7, "Current Strut Total Life Hours": 901.7},
-    {"Truck ID": "829", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 453.1, "Current Strut Total Life Hours": 453.1},
-    {"Truck ID": "829", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 453.1, "Current Strut Total Life Hours": 453.1},
-    {"Truck ID": "830", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 70134.59, "Current Strut Hours": 5217.97, "Current Strut Total Life Hours": 5217.97},
-    {"Truck ID": "830", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 30365.97, "Current Strut Hours": 267.9, "Current Strut Total Life Hours": 267.9},
-    {"Truck ID": "830", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 300.1, "Current Strut Total Life Hours": 300.1},
-    {"Truck ID": "830", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 300.1, "Current Strut Total Life Hours": 300.1},
-    {"Truck ID": "831", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 92427.77, "Current Strut Hours": 309, "Current Strut Total Life Hours": 309},
-    {"Truck ID": "831", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 20505.06, "Current Strut Hours": 309, "Current Strut Total Life Hours": 309},
-    {"Truck ID": "831", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 2603.5, "Current Strut Hours": 4211.03, "Current Strut Total Life Hours": 4211.03},
-    {"Truck ID": "831", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 990.7, "Current Strut Total Life Hours": 990.7},
-    {"Truck ID": "832", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 86110.17, "Current Strut Hours": 3384.16, "Current Strut Total Life Hours": 3384.16},
-    {"Truck ID": "832", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 16308.99, "Current Strut Hours": 909.1, "Current Strut Total Life Hours": 909.1},
-    {"Truck ID": "832", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 3507.5, "Current Strut Hours": 909.1, "Current Strut Total Life Hours": 909.1},
-    {"Truck ID": "832", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 3803.36, "Current Strut Total Life Hours": 3803.36},
-    {"Truck ID": "833", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 71054.16, "Current Strut Hours": 5902.77, "Current Strut Total Life Hours": 5902.77},
-    {"Truck ID": "833", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 14430.94, "Current Strut Hours": 2572.1, "Current Strut Total Life Hours": 2572.1},
-    {"Truck ID": "833", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 13440, "Current Strut Hours": 50.7, "Current Strut Total Life Hours": 50.7},
-    {"Truck ID": "833", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1315.7, "Current Strut Total Life Hours": 1315.7},
-    {"Truck ID": "834", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 36116.17, "Current Strut Hours": 3019.1, "Current Strut Total Life Hours": 3019.1},
-    {"Truck ID": "834", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 12077.37, "Current Strut Hours": 6854.95, "Current Strut Total Life Hours": 6854.95},
-    {"Truck ID": "834", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 52306.92, "Current Strut Hours": 2083.1, "Current Strut Total Life Hours": 2083.1},
-    {"Truck ID": "834", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 15135.21, "Current Strut Hours": 2525.2, "Current Strut Total Life Hours": 2525.2},
-    {"Truck ID": "835", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 74646.12, "Current Strut Hours": 4327.5, "Current Strut Total Life Hours": 4327.5},
-    {"Truck ID": "835", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 41655.97, "Current Strut Hours": 2684.1, "Current Strut Total Life Hours": 2684.1},
-    {"Truck ID": "835", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 22419.38, "Current Strut Hours": 4768.3, "Current Strut Total Life Hours": 4768.3},
-    {"Truck ID": "835", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1430.8, "Current Strut Total Life Hours": 1430.8},
-    {"Truck ID": "836", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 69963.13, "Current Strut Hours": 9932.11, "Current Strut Total Life Hours": 9932.11},
-    {"Truck ID": "836", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 23982.76, "Current Strut Hours": 14849.55, "Current Strut Total Life Hours": 14849.55},
-    {"Truck ID": "836", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 31441.34, "Current Strut Hours": 997.8, "Current Strut Total Life Hours": 997.8},
-    {"Truck ID": "836", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 16705.97, "Current Strut Hours": 997.8, "Current Strut Total Life Hours": 997.8},
-    {"Truck ID": "837", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 74319.11, "Current Strut Hours": 6144.06, "Current Strut Total Life Hours": 6144.06},
-    {"Truck ID": "837", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 60957.38, "Current Strut Hours": 3253.5, "Current Strut Total Life Hours": 3253.5},
-    {"Truck ID": "837", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 8500.22, "Current Strut Hours": 5127.86, "Current Strut Total Life Hours": 5127.86},
-    {"Truck ID": "837", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1167.6, "Current Strut Total Life Hours": 1167.6},
-    {"Truck ID": "838", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 18203.06, "Current Strut Hours": 3836.7, "Current Strut Total Life Hours": 3836.7},
-    {"Truck ID": "838", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 6560.91, "Current Strut Hours": 2069.5, "Current Strut Total Life Hours": 2069.5},
-    {"Truck ID": "838", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 348.2, "Current Strut Total Life Hours": 348.2},
-    {"Truck ID": "838", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 348.2, "Current Strut Total Life Hours": 348.2},
-    {"Truck ID": "839", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 42249.26, "Current Strut Hours": 9711.72, "Current Strut Total Life Hours": 9711.72},
-    {"Truck ID": "839", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 122.3, "Current Strut Hours": 7432, "Current Strut Total Life Hours": 7432},
-    {"Truck ID": "839", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1560.4, "Current Strut Total Life Hours": 1560.4},
-    {"Truck ID": "840", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 79977.13, "Current Strut Hours": 14390.54, "Current Strut Total Life Hours": 14390.54},
-    {"Truck ID": "840", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 20878.53, "Current Strut Hours": 9844.54, "Current Strut Total Life Hours": 9844.54},
-    {"Truck ID": "840", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 39083.96, "Current Strut Hours": 2335, "Current Strut Total Life Hours": 2335},
-    {"Truck ID": "840", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 3645.4, "Current Strut Hours": 2736.4, "Current Strut Total Life Hours": 2736.4},
-    {"Truck ID": "841", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 76704.77, "Current Strut Hours": 4233.59, "Current Strut Total Life Hours": 4233.59},
-    {"Truck ID": "841", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 43743.15, "Current Strut Hours": 591.4, "Current Strut Total Life Hours": 591.4},
-    {"Truck ID": "841", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 58790.57, "Current Strut Hours": 2503.2, "Current Strut Total Life Hours": 2503.2},
-    {"Truck ID": "841", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 5137.3, "Current Strut Hours": 2503.2, "Current Strut Total Life Hours": 2503.2},
-    {"Truck ID": "842", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 16351.84, "Current Strut Hours": 1086, "Current Strut Total Life Hours": 1086},
-    {"Truck ID": "842", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 0, "Current Strut Hours": 9128.35, "Current Strut Total Life Hours": 9128.35},
-    {"Truck ID": "842", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 447.9, "Current Strut Total Life Hours": 447.9},
-    {"Truck ID": "842", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 447.9, "Current Strut Total Life Hours": 447.9},
-    {"Truck ID": "843", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 38762.86, "Current Strut Hours": 611.6, "Current Strut Total Life Hours": 611.6},
-    {"Truck ID": "843", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 21955.41, "Current Strut Hours": 611.6, "Current Strut Total Life Hours": 611.6},
-    {"Truck ID": "843", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 57679.67, "Current Strut Hours": 122.5, "Current Strut Total Life Hours": 122.5},
-    {"Truck ID": "843", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1585, "Current Strut Total Life Hours": 1585},
-    {"Truck ID": "844", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 79462.5, "Current Strut Hours": 5561.55, "Current Strut Total Life Hours": 5561.55},
-    {"Truck ID": "844", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 43274.15, "Current Strut Hours": 10270.45, "Current Strut Total Life Hours": 10270.45},
-    {"Truck ID": "844", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 30792.31, "Current Strut Hours": 5771, "Current Strut Total Life Hours": 5771},
-    {"Truck ID": "844", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 16621.27, "Current Strut Hours": 2846.8, "Current Strut Total Life Hours": 2846.8},
-    {"Truck ID": "845", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 16690.84, "Current Strut Hours": 9490.35, "Current Strut Total Life Hours": 9490.35},
-    {"Truck ID": "845", "Strut Position": "Rear Right", "Strut Type": "HD", "Truck Accumulated Hours": 14315.27, "Current Strut Hours": 6323.05, "Current Strut Total Life Hours": 6323.05},
-    {"Truck ID": "845", "Strut Position": "Rear Left", "Strut Type": "HD", "Truck Accumulated Hours": 10514.73, "Current Strut Hours": 6323.05, "Current Strut Total Life Hours": 6323.05},
-    {"Truck ID": "845", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 404.4, "Current Strut Total Life Hours": 404.4},
-    {"Truck ID": "846", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 78622.13, "Current Strut Hours": 14562.47, "Current Strut Total Life Hours": 14562.47},
-    {"Truck ID": "846", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 52302.54, "Current Strut Hours": 7824.38, "Current Strut Total Life Hours": 7824.38},
-    {"Truck ID": "846", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 78264.55, "Current Strut Hours": 8828.08, "Current Strut Total Life Hours": 8828.08},
-    {"Truck ID": "846", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 8182.98, "Current Strut Hours": 9292, "Current Strut Total Life Hours": 9292},
-    {"Truck ID": "847", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 88590.68, "Current Strut Hours": 1580.9, "Current Strut Total Life Hours": 1580.9},
-    {"Truck ID": "847", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 64161.48, "Current Strut Hours": 9365.22, "Current Strut Total Life Hours": 9365.22},
-    {"Truck ID": "847", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 77278.72, "Current Strut Hours": 1476.2, "Current Strut Total Life Hours": 1476.2},
-    {"Truck ID": "847", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 41638.15, "Current Strut Hours": 1949.9, "Current Strut Total Life Hours": 1949.9},
-    {"Truck ID": "848", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 15931.73, "Current Strut Hours": 7102.69, "Current Strut Total Life Hours": 7102.69},
-    {"Truck ID": "848", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 13355.22, "Current Strut Hours": 8463.69, "Current Strut Total Life Hours": 8463.69},
-    {"Truck ID": "848", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 70979.48, "Current Strut Hours": 3178.4, "Current Strut Total Life Hours": 3178.4},
-    {"Truck ID": "848", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 13377.87, "Current Strut Hours": 4132.99, "Current Strut Total Life Hours": 4132.99},
-    {"Truck ID": "849", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 7846.12, "Current Strut Total Life Hours": 7846.12},
-    {"Truck ID": "849", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1061.3, "Current Strut Total Life Hours": 1061.3},
-    {"Truck ID": "849", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 22248.57, "Current Strut Hours": 2555.5, "Current Strut Total Life Hours": 2555.5},
-    {"Truck ID": "849", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 1545, "Current Strut Total Life Hours": 1545},
-    {"Truck ID": "850", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 24947.32, "Current Strut Hours": 4382.98, "Current Strut Total Life Hours": 4382.98},
-    {"Truck ID": "850", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 15316.69, "Current Strut Hours": 5936.58, "Current Strut Total Life Hours": 5936.58},
-    {"Truck ID": "850", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 20714.93, "Current Strut Hours": 4490.88, "Current Strut Total Life Hours": 4490.88},
-    {"Truck ID": "850", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 431.3, "Current Strut Total Life Hours": 431.3},
-    {"Truck ID": "851", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 74024.61, "Current Strut Hours": 592.2, "Current Strut Total Life Hours": 592.2},
-    {"Truck ID": "851", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 31720.55, "Current Strut Hours": 115.2, "Current Strut Total Life Hours": 115.2},
-    {"Truck ID": "851", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 4364.65, "Current Strut Hours": 592.2, "Current Strut Total Life Hours": 592.2},
-    {"Truck ID": "851", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 7044.73, "Current Strut Total Life Hours": 7044.73},
-    {"Truck ID": "852", "Strut Position": "Front Right", "Strut Type": "Std", "Truck Accumulated Hours": 23151.73, "Current Strut Hours": 819.5, "Current Strut Total Life Hours": 819.5},
-    {"Truck ID": "852", "Strut Position": "Front Left", "Strut Type": "Std", "Truck Accumulated Hours": 0, "Current Strut Hours": 3828.21, "Current Strut Total Life Hours": 3828.21},
-    {"Truck ID": "852", "Strut Position": "Rear Left", "Strut Type": "Std", "Truck Accumulated Hours": 87784.73, "Current Strut Hours": 3560.91, "Current Strut Total Life Hours": 3560.91},
-    {"Truck ID": "852", "Strut Position": "Rear Right", "Strut Type": "Std", "Truck Accumulated Hours": 73080.36, "Current Strut Hours": 3559.41, "Current Strut Total Life Hours": 3559.41},
+    {"Truck ID": "823", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 1194.7, "Current Strut Total Life Hours": 1194.7},
+    {"Truck ID": "823", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1194.7, "Current Strut Total Life Hours": 1194.7},
+    {"Truck ID": "823", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1954.2, "Current Strut Total Life Hours": 1954.2},
+    {"Truck ID": "824", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 3401.24, "Current Strut Total Life Hours": 3401.24},
+    {"Truck ID": "824", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 2414.7, "Current Strut Total Life Hours": 2414.7},
+    {"Truck ID": "824", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2396.9, "Current Strut Total Life Hours": 2396.9},
+    {"Truck ID": "825", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 2608.9, "Current Strut Total Life Hours": 2608.9},
+    {"Truck ID": "825", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 2608.9, "Current Strut Total Life Hours": 2608.9},
+    {"Truck ID": "825", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 9972.06, "Current Strut Total Life Hours": 9972.06},
+    {"Truck ID": "825", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1178.1, "Current Strut Total Life Hours": 1178.1},
+    {"Truck ID": "826", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 7558.66, "Current Strut Total Life Hours": 7558.66},
+    {"Truck ID": "826", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 2582.8, "Current Strut Total Life Hours": 2582.8},
+    {"Truck ID": "826", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 347.5, "Current Strut Total Life Hours": 347.5},
+    {"Truck ID": "826", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1185, "Current Strut Total Life Hours": 1185},
+    {"Truck ID": "827", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1889.6, "Current Strut Total Life Hours": 1889.6},
+    {"Truck ID": "827", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 353, "Current Strut Total Life Hours": 353},
+    {"Truck ID": "827", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 353, "Current Strut Total Life Hours": 353},
+    {"Truck ID": "827", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 847.7, "Current Strut Total Life Hours": 847.7},
+    {"Truck ID": "828", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 5198.84, "Current Strut Total Life Hours": 5198.84},
+    {"Truck ID": "828", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 7298.94, "Current Strut Total Life Hours": 7298.94},
+    {"Truck ID": "828", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 15304.32, "Current Strut Total Life Hours": 15304.32},
+    {"Truck ID": "828", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 15304.32, "Current Strut Total Life Hours": 15304.32},
+    {"Truck ID": "829", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 9376.77, "Current Strut Total Life Hours": 9376.77},
+    {"Truck ID": "829", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 901.7, "Current Strut Total Life Hours": 901.7},
+    {"Truck ID": "829", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 453.1, "Current Strut Total Life Hours": 453.1},
+    {"Truck ID": "829", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 453.1, "Current Strut Total Life Hours": 453.1},
+    {"Truck ID": "830", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 5217.97, "Current Strut Total Life Hours": 5217.97},
+    {"Truck ID": "830", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 267.9, "Current Strut Total Life Hours": 267.9},
+    {"Truck ID": "830", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 300.1, "Current Strut Total Life Hours": 300.1},
+    {"Truck ID": "830", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 300.1, "Current Strut Total Life Hours": 300.1},
+    {"Truck ID": "831", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 309, "Current Strut Total Life Hours": 309},
+    {"Truck ID": "831", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 309, "Current Strut Total Life Hours": 309},
+    {"Truck ID": "831", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 4211.03, "Current Strut Total Life Hours": 4211.03},
+    {"Truck ID": "831", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 990.7, "Current Strut Total Life Hours": 990.7},
+    {"Truck ID": "832", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 3384.16, "Current Strut Total Life Hours": 3384.16},
+    {"Truck ID": "832", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 909.1, "Current Strut Total Life Hours": 909.1},
+    {"Truck ID": "832", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 909.1, "Current Strut Total Life Hours": 909.1},
+    {"Truck ID": "832", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 3803.36, "Current Strut Total Life Hours": 3803.36},
+    {"Truck ID": "833", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 5902.77, "Current Strut Total Life Hours": 5902.77},
+    {"Truck ID": "833", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 2572.1, "Current Strut Total Life Hours": 2572.1},
+    {"Truck ID": "833", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 50.7, "Current Strut Total Life Hours": 50.7},
+    {"Truck ID": "833", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1315.7, "Current Strut Total Life Hours": 1315.7},
+    {"Truck ID": "834", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 3019.1, "Current Strut Total Life Hours": 3019.1},
+    {"Truck ID": "834", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 6854.95, "Current Strut Total Life Hours": 6854.95},
+    {"Truck ID": "834", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2083.1, "Current Strut Total Life Hours": 2083.1},
+    {"Truck ID": "834", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 2525.2, "Current Strut Total Life Hours": 2525.2},
+    {"Truck ID": "835", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 4327.5, "Current Strut Total Life Hours": 4327.5},
+    {"Truck ID": "835", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 2684.1, "Current Strut Total Life Hours": 2684.1},
+    {"Truck ID": "835", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 4768.3, "Current Strut Total Life Hours": 4768.3},
+    {"Truck ID": "835", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1430.8, "Current Strut Total Life Hours": 1430.8},
+    {"Truck ID": "836", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 9932.11, "Current Strut Total Life Hours": 9932.11},
+    {"Truck ID": "836", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 14849.55, "Current Strut Total Life Hours": 14849.55},
+    {"Truck ID": "836", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 997.8, "Current Strut Total Life Hours": 997.8},
+    {"Truck ID": "836", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 997.8, "Current Strut Total Life Hours": 997.8},
+    {"Truck ID": "837", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 6144.06, "Current Strut Total Life Hours": 6144.06},
+    {"Truck ID": "837", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 3253.5, "Current Strut Total Life Hours": 3253.5},
+    {"Truck ID": "837", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 5127.86, "Current Strut Total Life Hours": 5127.86},
+    {"Truck ID": "837", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1167.6, "Current Strut Total Life Hours": 1167.6},
+    {"Truck ID": "838", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 3836.7, "Current Strut Total Life Hours": 3836.7},
+    {"Truck ID": "838", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 2069.5, "Current Strut Total Life Hours": 2069.5},
+    {"Truck ID": "838", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 348.2, "Current Strut Total Life Hours": 348.2},
+    {"Truck ID": "838", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 348.2, "Current Strut Total Life Hours": 348.2},
+    {"Truck ID": "839", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 9711.72, "Current Strut Total Life Hours": 9711.72},
+    {"Truck ID": "839", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 7432, "Current Strut Total Life Hours": 7432},
+    {"Truck ID": "839", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 1560.4, "Current Strut Total Life Hours": 1560.4},
+    {"Truck ID": "840", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 14390.54, "Current Strut Total Life Hours": 14390.54},
+    {"Truck ID": "840", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 9844.54, "Current Strut Total Life Hours": 9844.54},
+    {"Truck ID": "840", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2335, "Current Strut Total Life Hours": 2335},
+    {"Truck ID": "840", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 2736.4, "Current Strut Total Life Hours": 2736.4},
+    {"Truck ID": "841", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 4233.59, "Current Strut Total Life Hours": 4233.59},
+    {"Truck ID": "841", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 591.4, "Current Strut Total Life Hours": 591.4},
+    {"Truck ID": "841", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2503.2, "Current Strut Total Life Hours": 2503.2},
+    {"Truck ID": "841", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 2503.2, "Current Strut Total Life Hours": 2503.2},
+    {"Truck ID": "842", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 1086, "Current Strut Total Life Hours": 1086},
+    {"Truck ID": "842", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 9128.35, "Current Strut Total Life Hours": 9128.35},
+    {"Truck ID": "842", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 447.9, "Current Strut Total Life Hours": 447.9},
+    {"Truck ID": "842", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 447.9, "Current Strut Total Life Hours": 447.9},
+    {"Truck ID": "843", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 611.6, "Current Strut Total Life Hours": 611.6},
+    {"Truck ID": "843", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 611.6, "Current Strut Total Life Hours": 611.6},
+    {"Truck ID": "843", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 122.5, "Current Strut Total Life Hours": 122.5},
+    {"Truck ID": "843", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1585, "Current Strut Total Life Hours": 1585},
+    {"Truck ID": "844", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 5561.55, "Current Strut Total Life Hours": 5561.55},
+    {"Truck ID": "844", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 10270.45, "Current Strut Total Life Hours": 10270.45},
+    {"Truck ID": "844", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 5771, "Current Strut Total Life Hours": 5771},
+    {"Truck ID": "844", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2846.8, "Current Strut Total Life Hours": 2846.8},
+    {"Truck ID": "845", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 9490.35, "Current Strut Total Life Hours": 9490.35},
+    {"Truck ID": "845", "Strut Position": "Rear Right", "Strut Type": "HD", "Current Strut Hours": 6323.05, "Current Strut Total Life Hours": 6323.05},
+    {"Truck ID": "845", "Strut Position": "Rear Left", "Strut Type": "HD", "Current Strut Hours": 6323.05, "Current Strut Total Life Hours": 6323.05},
+    {"Truck ID": "845", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 404.4, "Current Strut Total Life Hours": 404.4},
+    {"Truck ID": "846", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 14562.47, "Current Strut Total Life Hours": 14562.47},
+    {"Truck ID": "846", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 7824.38, "Current Strut Total Life Hours": 7824.38},
+    {"Truck ID": "846", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 8828.08, "Current Strut Total Life Hours": 8828.08},
+    {"Truck ID": "846", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 9292, "Current Strut Total Life Hours": 9292},
+    {"Truck ID": "847", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1580.9, "Current Strut Total Life Hours": 1580.9},
+    {"Truck ID": "847", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 9365.22, "Current Strut Total Life Hours": 9365.22},
+    {"Truck ID": "847", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1476.2, "Current Strut Total Life Hours": 1476.2},
+    {"Truck ID": "847", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 1949.9, "Current Strut Total Life Hours": 1949.9},
+    {"Truck ID": "848", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 7102.69, "Current Strut Total Life Hours": 7102.69},
+    {"Truck ID": "848", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 8463.69, "Current Strut Total Life Hours": 8463.69},
+    {"Truck ID": "848", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 3178.4, "Current Strut Total Life Hours": 3178.4},
+    {"Truck ID": "848", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 4132.99, "Current Strut Total Life Hours": 4132.99},
+    {"Truck ID": "849", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 7846.12, "Current Strut Total Life Hours": 7846.12},
+    {"Truck ID": "849", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 1061.3, "Current Strut Total Life Hours": 1061.3},
+    {"Truck ID": "849", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 2555.5, "Current Strut Total Life Hours": 2555.5},
+    {"Truck ID": "849", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 1545, "Current Strut Total Life Hours": 1545},
+    {"Truck ID": "850", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 4382.98, "Current Strut Total Life Hours": 4382.98},
+    {"Truck ID": "850", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 5936.58, "Current Strut Total Life Hours": 5936.58},
+    {"Truck ID": "850", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 4490.88, "Current Strut Total Life Hours": 4490.88},
+    {"Truck ID": "850", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 431.3, "Current Strut Total Life Hours": 431.3},
+    {"Truck ID": "851", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 592.2, "Current Strut Total Life Hours": 592.2},
+    {"Truck ID": "851", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 115.2, "Current Strut Total Life Hours": 115.2},
+    {"Truck ID": "851", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 592.2, "Current Strut Total Life Hours": 592.2},
+    {"Truck ID": "851", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 7044.73, "Current Strut Total Life Hours": 7044.73},
+    {"Truck ID": "852", "Strut Position": "Front Right", "Strut Type": "Std", "Current Strut Hours": 819.5, "Current Strut Total Life Hours": 819.5},
+    {"Truck ID": "852", "Strut Position": "Front Left", "Strut Type": "Std", "Current Strut Hours": 3828.21, "Current Strut Total Life Hours": 3828.21},
+    {"Truck ID": "852", "Strut Position": "Rear Left", "Strut Type": "Std", "Current Strut Hours": 3560.91, "Current Strut Total Life Hours": 3560.91},
+    {"Truck ID": "852", "Strut Position": "Rear Right", "Strut Type": "Std", "Current Strut Hours": 3559.41, "Current Strut Total Life Hours": 3559.41},
 ]
 
 
@@ -146,7 +147,6 @@ EMBEDDED_STRUT_DATA = [
 def validate_input_data(df: pd.DataFrame) -> list:
     required_columns = [
         "Truck ID",
-        "Truck Accumulated Hours",
         "Strut Position",
         "Strut Type",
         "Current Strut Hours",
@@ -173,7 +173,6 @@ def validate_input_data(df: pd.DataFrame) -> list:
             errors.append(f"Invalid strut types found: {invalid_types}")
 
     numeric_columns = [
-        "Truck Accumulated Hours",
         "Current Strut Hours",
         "Current Strut Total Life Hours",
     ]
@@ -483,7 +482,87 @@ with st.expander("View strut position completeness by truck"):
 
 
 # ============================================================
-# 8. RUN FORECAST
+# 8. STRUT AGE POPULATION CHARTS
+# ============================================================
+
+st.subheader("Strut Age Population by Accumulated Hours")
+
+age_bin_size = st.number_input(
+    "Hour bin size for strut age population",
+    min_value=500,
+    max_value=10000,
+    value=2500,
+    step=500,
+)
+
+age_population_df = input_df.copy()
+age_population_df["Current Strut Hours"] = pd.to_numeric(age_population_df["Current Strut Hours"], errors="coerce")
+age_population_df = age_population_df.dropna(subset=["Current Strut Hours"])
+
+max_strut_hours = age_population_df["Current Strut Hours"].max()
+upper_bin_limit = int(((max_strut_hours // age_bin_size) + 1) * age_bin_size)
+bins = list(range(0, upper_bin_limit + age_bin_size, age_bin_size))
+labels = [f"{bins[i]:,} - {bins[i + 1]:,}" for i in range(len(bins) - 1)]
+
+age_population_df["Age Bucket"] = pd.cut(
+    age_population_df["Current Strut Hours"],
+    bins=bins,
+    labels=labels,
+    include_lowest=True,
+    right=False,
+)
+
+age_bucket_summary = (
+    age_population_df
+    .groupby(["Age Bucket", "Strut Type"], observed=False)
+    .size()
+    .reset_index(name="Strut Count")
+)
+
+fig_age_population = px.bar(
+    age_bucket_summary,
+    x="Age Bucket",
+    y="Strut Count",
+    color="Strut Type",
+    title="Strut Age Population by Accumulated Hour Buckets",
+    text_auto=True,
+)
+fig_age_population.update_layout(xaxis_title="Accumulated Strut Hours", yaxis_title="Number of Struts")
+st.plotly_chart(fig_age_population, use_container_width=True)
+
+st.subheader("Population Over Strut Accumulated Hours")
+
+sorted_population_df = (
+    age_population_df
+    .sort_values("Current Strut Hours")
+    .reset_index(drop=True)
+)
+sorted_population_df["Cumulative Strut Population"] = sorted_population_df.index + 1
+sorted_population_df["Cumulative Population %"] = (
+    sorted_population_df["Cumulative Strut Population"] / len(sorted_population_df) * 100
+)
+
+fig_cumulative_population = px.line(
+    sorted_population_df,
+    x="Current Strut Hours",
+    y="Cumulative Strut Population",
+    color="Strut Type",
+    markers=True,
+    title="Cumulative Strut Population Over Accumulated Hours",
+    hover_data=["Truck ID", "Strut Position", "Cumulative Population %"],
+)
+fig_cumulative_population.update_layout(
+    xaxis_title="Accumulated Strut Hours",
+    yaxis_title="Cumulative Number of Struts",
+)
+st.plotly_chart(fig_cumulative_population, use_container_width=True)
+
+with st.expander("View strut age bucket summary"):
+    st.dataframe(age_bucket_summary, use_container_width=True)
+
+
+# ============================================================
+# 9. RUN FORECAST
 # ============================================================
 
 run_forecast = st.button("Run Forecast", type="primary")
